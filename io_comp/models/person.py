@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List
 from io_comp.models.event import Event
 
-@dataclass
+@dataclass(frozen=True)
 class Person:
     """Represents a person and their scheduled events."""
     name: str

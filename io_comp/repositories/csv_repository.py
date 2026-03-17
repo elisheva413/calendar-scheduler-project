@@ -1,13 +1,26 @@
 import csv
 from datetime import datetime
 from typing import List, Dict
+from abc import ABC, abstractmethod
 
 # Import our models
 from io_comp.models.person import Person
 from io_comp.models.event import Event
 from io_comp.models.time_slot import TimeSlot
 
-class CsvRepository:
+class CalendarRepository(ABC):
+    """
+    Abstract base class (Interface) defining the contract for any repository.
+    This allows us to easily swap out CSV for a Database or API in the future.
+    """
+    
+    @abstractmethod
+    def load_data(self) -> List[Person]:
+        """Loads calendar data and returns a list of Person objects."""
+        pass
+
+
+class CsvRepository(CalendarRepository):
     """Repository responsible for loading calendar data from a CSV file."""
     
     def __init__(self, file_path: str):

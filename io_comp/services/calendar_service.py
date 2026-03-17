@@ -5,16 +5,26 @@ from datetime import time, timedelta, datetime, date
 from io_comp.models.person import Person
 from io_comp.models.time_slot import TimeSlot
 
+# Custom exceptions for domain-specific errors
+class CalendarError(Exception):
+    """Base exception for calendar domain errors."""
+    pass
+
+class InvalidDurationError(CalendarError):
+    """Raised when the requested meeting duration is invalid (e.g., zero or negative)."""
+    pass
+
 class CalendarService:
     """Service handling the core business logic of the calendar."""
     
-    def __init__(self, people: List[Person]):
+    # Workday hours are now configurable via parameters instead of being hardcoded
+    def __init__(self, people: List[Person], workday_start: time = time(7, 0), workday_end: time = time(19, 0)):
         # Convert the list of people to a dictionary for easy lookup by name
         self.people_dict: Dict[str, Person] = {person.name: person for person in people}
         
-        # Define working hours according to system requirements
-        self.workday_start = time(7, 0)
-        self.workday_end = time(19, 0)
+        # Set configurable working hours
+        self.workday_start = workday_start
+        self.workday_end = workday_end
         
         # A dummy date to help us perform mathematical operations on times
         self._dummy_date = date.today()
@@ -28,6 +38,10 @@ class CalendarService:
         Finds all available starting times where ALL requested persons 
         are available for the given duration.
         """
+        # Validate the requested duration using our custom exception
+        if event_duration.total_seconds() <= 0:
+            raise InvalidDurationError("Meeting duration must be greater than zero.")
+
         # 1. Collect all events of the requested persons
         all_slots: List[TimeSlot] = []
         for name in person_list:
